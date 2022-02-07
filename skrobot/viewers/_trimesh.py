@@ -28,6 +28,7 @@ def _redraw_all_windows():
 class TrimeshSceneViewer(trimesh.viewer.SceneViewer):
 
     def __init__(self, resolution=None):
+        print('Created pyglet viewer')
         if resolution is None:
             resolution = (640, 480)
 

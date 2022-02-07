@@ -45,6 +45,8 @@ class Axis(Link):
             link.add_child_link(child_link)
         return link
 
+    def copy(self):             # TLP
+        return NotImplementedError
 
 class Box(Link):
 
@@ -67,6 +69,9 @@ class Box(Link):
             self.assoc(sdf.coords)
             self.sdf = sdf
 
+    def copy(self):             # TLP
+        return Box(self._extents, pos=self.translation, rot=self.rotation,
+                   with_sdf = bool(self.sdf))
 
 class CameraMarker(Link):
 
@@ -78,6 +83,7 @@ class CameraMarker(Link):
 
         super(CameraMarker, self).__init__(
             pos=pos, rot=rot, name=name)
+        self._params = (focal, fov, z_near, z_far, marker_height)
         camera = trimesh.scene.Camera(name=name,
                                       focal=focal,
                                       fov=fov,
@@ -87,6 +93,9 @@ class CameraMarker(Link):
         self._visual_mesh = trimesh.creation.camera_marker(
             camera,
             marker_height=marker_height)
+
+    def copy(self):             # TLP
+        return CameraMarker(*self._params, pos=self.translation, rot=self.rotation)
 
 
 class Cone(Link):
@@ -98,6 +107,7 @@ class Cone(Link):
         if name is None:
             name = 'cone_{}'.format(str(uuid.uuid1()).replace('-', '_'))
 
+        self._extents = (radius, height, sections)
         mesh = trimesh.creation.cone(
             radius=radius,
             height=height,
@@ -109,6 +119,9 @@ class Cone(Link):
                                    collision_mesh=mesh,
                                    visual_mesh=mesh)
 
+    def copy(self):             # TLP
+        return Cone(*self._extents, pos=self.translation, rot=self.rotation)
+
 
 class Cylinder(Link):
 
@@ -119,6 +132,7 @@ class Cylinder(Link):
         if name is None:
             name = 'cylinder_{}'.format(str(uuid.uuid1()).replace('-', '_'))
 
+        self._extents = (radius, height, sections)            
         mesh = trimesh.creation.cylinder(
             radius=radius,
             height=height,
@@ -134,6 +148,9 @@ class Cylinder(Link):
             self.assoc(sdf.coords)
             self.sdf = sdf
 
+    def copy(self):             # TLP
+        return Cylinder(*self._extents, pos=self.translation, rot=self.rotation,
+                        with_sdf = bool(self.sdf))
 
 class Sphere(Link):
 
@@ -142,6 +159,7 @@ class Sphere(Link):
         if name is None:
             name = 'sphere_{}'.format(str(uuid.uuid1()).replace('-', '_'))
 
+            self._extents = (radius, subdivisions)
         mesh = trimesh.creation.icosphere(
             radius=radius,
             subdivisions=subdivisions,
@@ -156,6 +174,9 @@ class Sphere(Link):
             self.assoc(sdf.coords)
             self.sdf = sdf
 
+    def copy(self):             # TLP
+        return Sphere(*self._extents, pos=self.translation, rot=self.rotation,
+                      with_sdf = bool(self.sdf))
 
 class Annulus(Link):
 
@@ -165,6 +186,7 @@ class Annulus(Link):
         if name is None:
             name = 'annulus_{}'.format(str(uuid.uuid1()).replace('-', '_'))
 
+        self._extents = (r_min, r_max, height)
         mesh = trimesh.creation.annulus(
             r_min=r_min,
             r_max=r_max,
@@ -176,6 +198,9 @@ class Annulus(Link):
                                       collision_mesh=mesh,
                                       visual_mesh=mesh)
 
+    def copy(self):             # TLP
+        return Annulus(*self._extents, pos=self.translation, rot=self.rotation,
+                        with_sdf = bool(self.sdf))
 
 class MeshLink(Link):
 
@@ -202,6 +227,9 @@ class MeshLink(Link):
             self.assoc(sdf.coords)
             self.sdf = sdf
 
+    def copy(self):             # TLP
+        return MeshLink(self.visual_mesh, pos=self.translation, rot=self.rotation,
+                        with_sdf = bool(self.sdf))
 
 class PointCloudLink(Link):
 
@@ -214,3 +242,6 @@ class PointCloudLink(Link):
 
         super(PointCloudLink, self).__init__(pos=pos, rot=rot, name=name)
         self.visual_mesh = visual_mesh
+
+    def copy(self):             # TLP
+        return PointCloudLink(self.visual_mesh, pos=self.translation, rot=self.rotation)

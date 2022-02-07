@@ -1,5 +1,6 @@
 from cached_property import cached_property
 import numpy as np
+import trimesh
 
 from skrobot.coordinates import CascadedCoords
 from skrobot.data import pr2_urdfpath
@@ -31,6 +32,14 @@ class PR2(RobotModelFromURDF):
             parent=self.torso_lift_link,
             name='head_end_coords')
 
+        # Wrist
+        self.rarm_wrist_coords = CascadedCoords(
+            parent=self.r_wrist_roll_link,
+            name='rarm_wrist_coords')
+        self.larm_wrist_coords = CascadedCoords(
+            parent=self.l_wrist_roll_link,
+            name='larm_wrist_coords')
+
         # limbs
         self.torso = [self.torso_lift_link]
         self.torso_root_link = self.torso_lift_link
@@ -38,7 +47,58 @@ class PR2(RobotModelFromURDF):
         self.rarm_root_link = self.r_shoulder_pan_link
         self.head_root_link = self.head_pan_link
 
+        self.chains = set(['base', 'right', 'left', 'head'])
+        self.base_links = \
+            [self.base_link, self.base_bellow_link, self.torso_lift_link]
+        self.link_lists = \
+            {'left': self.larm.link_list,
+             'right': self.rarm.link_list,
+             'head': self.head.link_list,
+             'base': self.base_links}
+        self.joint_lists = \
+            {chain: [link.joint for link in self.link_lists[chain]] for chain \
+             in self.chains}
+        self.end_coords = \
+            {'left': self.larm_end_coords,
+             'right': self.rarm_end_coords,
+             'head': self.head_end_coords}
+        self.hand_links = \
+            {'left' : [self.l_gripper_palm_link,
+                       self.l_gripper_r_finger_link,
+                       self.l_gripper_l_finger_link,
+                       self.l_gripper_r_finger_tip_link,
+                       self.l_gripper_l_finger_tip_link],
+             'right': [self.r_gripper_palm_link,
+                       self.r_gripper_r_finger_link,
+                       self.r_gripper_l_finger_link,
+                       self.r_gripper_r_finger_tip_link,
+                       self.r_gripper_l_finger_tip_link]}
+        self.collision_link_lists = \
+            {'left': self.link_lists['left'] + \
+             [self.l_forearm_link, self.l_upper_arm_link] + self.hand_links['left'],
+             'right': self.link_lists['right'] + \
+             [self.r_forearm_link, self.r_upper_arm_link] + self.hand_links['right'],
+             'head': self.link_lists['head'],
+             'base': self.link_lists['base']}
+        self.hand_body_names = \
+            {h : set([l.name for l in self.hand_links[h]]) \
+             for h in ('left', 'right')}
+        self.hand_body_names['left'] |= set([self.l_wrist_flex_link, self.l_wrist_roll_link])
+        self.hand_body_names['right'] |= set([self.r_wrist_flex_link, self.r_wrist_roll_link])
+        self.base_body_names = set([l.name for l in self.base_links])
+        self.arm_body_names = \
+            {h : set([l.name for l in set(self.collision_link_lists[h]) - set(self.hand_links[h])]) \
+             for h in ('left', 'right')}
+        # To enable GJK collision checking
+        for chain in self.collision_link_lists:
+            for link in self.collision_link_lists[chain]:
+                link.collision_mesh.convex_mesh = trimesh.convex.convex_hull(link.collision_mesh)
+                link.collision_mesh.convex_mesh_vertices = \
+                    np.ascontiguousarray(link.collision_mesh.convex_mesh.vertices, dtype=np.double)
+                # print('Computing convex_mesh_vertices for', link)
+        
         # custom min_angle and max_angle for joints
+        '''
         joint_list = [
             self.torso_lift_joint, self.l_shoulder_pan_joint,
             self.l_shoulder_lift_joint, self.l_upper_arm_roll_joint,
@@ -68,7 +128,7 @@ class PR2(RobotModelFromURDF):
                  np.deg2rad(74.2702))):
             j.min_angle = min_angle
             j.max_angle = max_angle
-
+        '''
     @cached_property
     def default_urdf_path(self):
         return pr2_urdfpath()
@@ -76,9 +136,12 @@ class PR2(RobotModelFromURDF):
     @cached_property
     def rarm(self):
         rarm_links = [
-            self.r_shoulder_pan_link, self.r_shoulder_lift_link,
-            self.r_upper_arm_roll_link, self.r_elbow_flex_link,
-            self.r_forearm_roll_link, self.r_wrist_flex_link,
+            self.r_shoulder_pan_link,
+            self.r_shoulder_lift_link,
+            self.r_upper_arm_roll_link,
+            self.r_elbow_flex_link,
+            self.r_forearm_roll_link,
+            self.r_wrist_flex_link,
             self.r_wrist_roll_link
         ]
 
@@ -87,6 +150,7 @@ class PR2(RobotModelFromURDF):
             rarm_joints.append(link.joint)
         r = RobotModel(link_list=rarm_links, joint_list=rarm_joints)
         r.end_coords = self.rarm_end_coords
+        r.wrist_coords = self.rarm_wrist_coords
         return r
 
     @cached_property
@@ -105,6 +169,7 @@ class PR2(RobotModelFromURDF):
             larm_joints.append(link.joint)
         r = RobotModel(link_list=larm_links, joint_list=larm_joints)
         r.end_coords = self.larm_end_coords
+        r.wrist_coords = self.larm_wrist_coords
         return r
 
     @cached_property
@@ -140,7 +205,7 @@ class PR2(RobotModelFromURDF):
         return self.angle_vector()
 
     def reset_pose(self):
-        self.torso_lift_joint.joint_angle(0.05)
+        self.torso_lift_joint.joint_angle(0.3)
         self.l_shoulder_pan_joint.joint_angle(np.deg2rad(60))
         self.l_shoulder_lift_joint.joint_angle(np.deg2rad(74))
         self.l_upper_arm_roll_joint.joint_angle(np.deg2rad(70))
@@ -169,23 +234,23 @@ class PR2(RobotModelFromURDF):
             If dist is None, return gripper distance.
             If flaot value is given, change joint angle.
         arm : str
-            Specify target arm.  You can specify 'larm', 'rarm', 'arms'.
+            Specify target arm.  You can specify 'left', 'right', 'arms'.
 
         Returns
         -------
         dist : float
             Result of gripper distance in meter.
         """
-        if arm == 'larm':
+        if arm == 'left':
             joints = [self.l_gripper_l_finger_joint]
-        elif arm == 'rarm':
+        elif arm == 'right':
             joints = [self.r_gripper_l_finger_joint]
         elif arm == 'arms':
             joints = [self.r_gripper_l_finger_joint,
                       self.l_gripper_l_finger_joint]
         else:
             raise ValueError('Invalid arm arm argument. You can specify '
-                             "'larm', 'rarm' or 'arms'.")
+                             "'left', 'right' or 'arms'.")
 
         def _dist(angle):
             return 0.0099 * (18.4586 * np.sin(angle) + np.cos(angle) - 1.0101)
