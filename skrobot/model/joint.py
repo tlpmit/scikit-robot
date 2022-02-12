@@ -241,7 +241,8 @@ class RotationalJoint(Joint):
             v = self.min_angle
         diff_angle = v - self._joint_angle
         self._joint_angle = v
-        self.child_link.rotate(diff_angle, self.axis)
+        if diff_angle:          # TLP - skip if 0
+            self.child_link.rotate(diff_angle, self.axis)
         if enable_hook:
             for hook in self._hooks:
                 hook()

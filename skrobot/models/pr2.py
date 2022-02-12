@@ -96,6 +96,8 @@ class PR2(RobotModelFromURDF):
                 link.collision_mesh.convex_mesh_vertices = \
                     np.ascontiguousarray(link.collision_mesh.convex_mesh.vertices, dtype=np.double)
                 # print('Computing convex_mesh_vertices for', link)
+        self.gripper_distance_forward_cache = {}
+        self.gripper_distance_inverse_cache = {}
         
         # custom min_angle and max_angle for joints
         '''
@@ -253,17 +255,23 @@ class PR2(RobotModelFromURDF):
                              "'left', 'right' or 'arms'.")
 
         def _dist(angle):
-            return 0.0099 * (18.4586 * np.sin(angle) + np.cos(angle) - 1.0101)
+            if angle not in self.gripper_distance_forward_cache:
+                self.gripper_distance_forward_cache[angle] = \
+                    0.0099 * (18.4586 * np.sin(angle) + np.cos(angle) - 1.0101)
+            return self.gripper_distance_forward_cache[angle]
 
         if dist is not None:
-            # calculate joint_angle from approximated equation
-            max_dist = _dist(joints[0].max_angle)
-            dist = max(min(dist, max_dist), 0)
-            d = dist / 2.0
-            angle = 2 * np.arctan(
-                (9137 - np.sqrt(2)
-                 * np.sqrt(-5e9 * (d**2) - 5e7 * d + 41739897))
-                / (5 * (20000 * d + 199)))
+            if dist not in self.gripper_distance_inverse_cache:
+                # calculate joint_angle from approximated equation
+                max_dist = _dist(joints[0].max_angle)
+                dist = max(min(dist, max_dist), 0)
+                d = dist / 2.0
+                angle = 2 * np.arctan(
+                    (9137 - np.sqrt(2)
+                     * np.sqrt(-5e9 * (d**2) - 5e7 * d + 41739897))
+                    / (5 * (20000 * d + 199)))
+                self.gripper_distance_inverse_cache[dist] = angle
+            angle = self.gripper_distance_inverse_cache[dist]
             for joint in joints:
                 joint.joint_angle(angle)
         angle = joints[0].joint_angle()
