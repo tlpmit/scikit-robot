@@ -98,7 +98,27 @@ class PR2(RobotModelFromURDF):
                 # print('Computing convex_mesh_vertices for', link)
         self.gripper_distance_forward_cache = {}
         self.gripper_distance_inverse_cache = {}
-        
+        # Self collision links
+        self.self_collision_link_name_pairs = set()
+        for link1 in self.collision_link_lists['left']:
+            for link2 in self.collision_link_lists['base']:
+                if link1 in (self.l_shoulder_pan_link, self.l_shoulder_lift_link,
+                             self.l_upper_arm_link, self.l_upper_arm_roll_link) \
+                   and link2 in self.base_links:
+                    continue
+                self.self_collision_link_name_pairs.add(tuple(sorted((link1.name, link2.name))))
+            for link2 in self.collision_link_lists['right'] + self.collision_link_lists['head']:
+                self.self_collision_link_name_pairs.add(tuple(sorted((link1.name, link2.name))))
+        for link1 in self.collision_link_lists['right']:
+            for link2 in self.collision_link_lists['base']:
+                if link1 in (self.r_shoulder_pan_link, self.r_shoulder_lift_link,
+                             self.r_upper_arm_link, self.r_upper_arm_roll_link) \
+                   and link2 in self.base_links:
+                    continue
+                self.self_collision_link_name_pairs.add(tuple(sorted((link1.name, link2.name))))
+            for link2 in self.collision_link_lists['head']:
+                self.self_collision_link_name_pairs.add(tuple(sorted((link1.name, link2.name))))
+                
         # custom min_angle and max_angle for joints
         '''
         joint_list = [

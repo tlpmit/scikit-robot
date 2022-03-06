@@ -9,3 +9,5 @@
 /src/
 build
 /docs/source/**/reference/**/generated
+skrobot/.DS_Store
+skrobot/viewers/.DS_Store
