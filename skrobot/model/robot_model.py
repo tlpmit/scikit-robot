@@ -2,6 +2,7 @@ import io
 import itertools
 from logging import getLogger
 import warnings
+import pdb
 
 import numpy as np
 import numpy.linalg as LA
@@ -1661,11 +1662,9 @@ class RobotModel(CascadedLink):
         if not isinstance(visual, urdf.Visual):
             raise TypeError('visual must be urdf.Visual, but got: {}'
                             .format(type(visual)))
-
         meshes = []
         for mesh in visual.geometry.meshes:
             mesh = mesh.copy()
-
             # rescale
             if visual.geometry.mesh is not None:
                 if visual.geometry.mesh.scale is not None:
@@ -1673,13 +1672,19 @@ class RobotModel(CascadedLink):
 
             # TextureVisuals is usually slow to render
             if not isinstance(mesh.visual, trimesh.visual.ColorVisuals):
+                original_visual = mesh.visual
                 mesh.visual = mesh.visual.to_color()
+
                 if mesh.visual.vertex_colors.ndim == 1:
                     mesh.visual.vertex_colors = \
                         mesh.visual.vertex_colors[None].repeat(
                             mesh.vertices.shape[0], axis=0
-                        )
-
+                        )                    
+                elif not original_visual.material.image:
+                    mesh.visual.vertex_colors = original_visual.material.diffuse
+                    mesh.visual.face_colors = original_visual.material.diffuse
+                    # print(visual.name, original_visual.material.diffuse)
+                    
             # If color or texture is not specified in mesh file,
             # use information specified in URDF.
             if (
@@ -1699,18 +1704,18 @@ class RobotModel(CascadedLink):
             meshes.append(mesh)
         return meshes
 
-    def load_urdf(self, urdf):
+    def load_urdf(self, urdf, global_scale=1.0):
         f = io.StringIO()
         f.write(urdf)
         f.seek(0)
-        self.load_urdf_file(file_obj=f)
+        self.load_urdf_file(file_obj=f, global_scale=global_scale)
 
-    def load_urdf_file(self, file_obj):
+    def load_urdf_file(self, file_obj, global_scale=1.0):
         if isinstance(file_obj, six.string_types):
             self.urdf_path = file_obj
         else:
             self.urdf_path = getattr(file_obj, 'name', None)
-        self.urdf_robot_model = URDF.load(file_obj=file_obj)
+        self.urdf_robot_model = URDF.load(file_obj=file_obj, global_scale=global_scale)
         root_link = self.urdf_robot_model.base_link
 
         links = []

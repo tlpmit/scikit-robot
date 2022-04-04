@@ -4,7 +4,7 @@
 import copy
 import os
 import time
-import pdb
+
 
 try:
     # for python3
@@ -31,7 +31,6 @@ try:
 except ImportError:
     rospkg = None
 
-GLOBAL_SCALE = 1.0              # HACK
 
 def parse_origin(node):
     """Find the ``origin`` subelement of an XML node and convert it
@@ -56,7 +55,7 @@ def parse_origin(node):
     origin_node = node.find('origin')
     if origin_node is not None:
         if 'xyz' in origin_node.attrib:
-            matrix[:3, 3] = GLOBAL_SCALE * np.fromstring(origin_node.attrib['xyz'], sep=' ')
+            matrix[:3, 3] = np.fromstring(origin_node.attrib['xyz'], sep=' ')
         if 'rpy' in origin_node.attrib:
             rpy = np.fromstring(origin_node.attrib['rpy'], sep=' ')
             roll, pitch, yaw = rpy
@@ -162,8 +161,7 @@ def load_meshes(filename):
     meshes : list of :class:`~trimesh.base.Trimesh`
         The meshes loaded from the file.
     """
-    resolver = trimesh.visual.resolvers.FilePathResolver(filename)
-    meshes = trimesh.load(filename, resolver=resolver)
+    meshes = trimesh.load(filename)
 
     # If we got a scene, dump the meshes
     if isinstance(meshes, trimesh.Scene):
@@ -180,7 +178,7 @@ def load_meshes(filename):
     elif isinstance(meshes, trimesh.Trimesh):
         meshes = [meshes]
     else:
-        raise ValueError('Unable to load mesh from ile')
+        raise ValueError('Unable to load mesh from file')
 
     return meshes
 
@@ -524,7 +522,7 @@ class Box(URDFType):
 
     @size.setter
     def size(self, value):
-        self._size = GLOBAL_SCALE * np.asanyarray(value).astype(np.float)
+        self._size = np.asanyarray(value).astype(np.float)
         self._meshes = []
 
     @property
@@ -570,7 +568,7 @@ class Cylinder(URDFType):
 
     @radius.setter
     def radius(self, value):
-        self._radius = GLOBAL_SCALE * float(value)
+        self._radius = float(value)
         self._meshes = []
 
     @property
@@ -582,7 +580,7 @@ class Cylinder(URDFType):
 
     @length.setter
     def length(self, value):
-        self._length = GLOBAL_SCALE * float(value)
+        self._length = float(value)
         self._meshes = []
 
     @property
@@ -626,7 +624,7 @@ class Sphere(URDFType):
 
     @radius.setter
     def radius(self, value):
-        self._radius = GLOBAL_SCALE * float(value)
+        self._radius = float(value)
         self._meshes = []
 
     @property
@@ -693,9 +691,7 @@ class Mesh(URDFType):
     def scale(self, value):
         if value is not None:
             value = np.asanyarray(value).astype(np.float)
-        else:
-            value = np.asanyarray([1.0,1.0,1.0]).astype(np.float)
-        self._scale = GLOBAL_SCALE * value
+        self._scale = value
 
     @property
     def meshes(self):
@@ -3063,7 +3059,7 @@ class URDF(URDFType):
                     self._material_map[v.material.name] = v.material
 
     @staticmethod
-    def load(file_obj, global_scale = 1.0):
+    def load(file_obj):
         """Load a URDF from a file.
 
         Parameters
@@ -3073,15 +3069,12 @@ class URDF(URDFType):
             ``.urdf`` XML file. Any paths in the URDF should be specified
             as relative paths to the ``.urdf`` file instead of as ROS
             resources.
-        global_scale : float
 
         Returns
         -------
         urdf : :class:`.URDF`
             The parsed URDF.
         """
-        global GLOBAL_SCALE
-        
         if isinstance(file_obj, six.string_types):
             if os.path.isfile(file_obj):
                 parser = ET.XMLParser(remove_comments=True,
@@ -3095,7 +3088,6 @@ class URDF(URDFType):
             tree = ET.parse(file_obj, parser=parser)
             path, _ = os.path.split(file_obj.name)
 
-        GLOBAL_SCALE = global_scale
         node = tree.getroot()
         return URDF._from_xml(node, path)
 
