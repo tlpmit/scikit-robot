@@ -107,7 +107,7 @@ class Link(CascadedCoords):
         """
         if not (mesh is None
                 or isinstance(mesh, trimesh.Trimesh)
-                or (isinstance(mesh, collections.Sequence)
+                or (isinstance(mesh, collections.abc.Sequence)
                     and all(isinstance(m, trimesh.Trimesh) for m in mesh))
                 or isinstance(mesh, trimesh.points.PointCloud)
                 or isinstance(mesh, str)):

@@ -1,9 +1,11 @@
+# For scikit-robot
 cached-property
+cvxopt
 future
 gdown
 lxml
-networkx==2.2.0
-numpy>=1.16.0
+networkx
+numpy
 ordered_set
 pillow
 pycollada!=0.7  # required for robot model using collada
@@ -14,9 +16,14 @@ pyyaml
 quadprog
 repoze.lru;python_version<"3.2"
 scikit-learn
-scipy;python_version>="3.0"
-scipy<=1.2.3;python_version<"3.0"
+scipy
 six
 sphinx==1.8.2
 sphinx_rtd_theme
+# trimesh
+rtree
+pybullet  # to get v-hacd
+
+
+
 
