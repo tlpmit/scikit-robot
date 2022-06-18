@@ -1671,34 +1671,38 @@ class RobotModel(CascadedLink):
                     mesh.vertices = mesh.vertices * visual.geometry.mesh.scale
 
             # TextureVisuals is usually slow to render
-            if not isinstance(mesh.visual, trimesh.visual.ColorVisuals):
-                original_visual = mesh.visual
-                mesh.visual = mesh.visual.to_color()
+            original_mesh_visual = None
+            try:
+                if not isinstance(mesh.visual, trimesh.visual.ColorVisuals):
+                    original_mesh_visual = mesh.visual
+                    mesh.visual = mesh.visual.to_color()
 
-                if mesh.visual.vertex_colors.ndim == 1:
-                    mesh.visual.vertex_colors = \
-                        mesh.visual.vertex_colors[None].repeat(
-                            mesh.vertices.shape[0], axis=0
-                        )                    
-                elif not original_visual.material.image:
-                    mesh.visual.vertex_colors = original_visual.material.diffuse
-                    mesh.visual.face_colors = original_visual.material.diffuse
-                    # print(visual.name, original_visual.material.diffuse)
+                    if mesh.visual.vertex_colors.ndim == 1:
+                        mesh.visual.vertex_colors = \
+                            mesh.visual.vertex_colors[None].repeat(
+                                mesh.vertices.shape[0], axis=0
+                            )                    
+
+                # If color or texture is not specified in mesh file,
+                # use information specified in URDF.
+                if (
+                    (mesh.visual.face_colors
+                        == trimesh.visual.DEFAULT_COLOR).all()
+                ):
+                    if visual.material:
+
+                        if visual.material.texture is not None:
+                            warnings.warn(
+                                'texture specified in URDF is not supported'
+                            )
+                        elif visual.material.color is not None:
+                            mesh.visual.face_colors = visual.material.color
+
+                    elif original_mesh_visual and not original_mesh_visual.material.image:
+                        mesh.visual.vertex_colors = original_mesh_visual.material.diffuse
+            except:
+                print("Could not convert Texture to Color")
                     
-            # If color or texture is not specified in mesh file,
-            # use information specified in URDF.
-            if (
-                (mesh.visual.face_colors
-                 == trimesh.visual.DEFAULT_COLOR).all()
-                and visual.material
-            ):
-                if visual.material.texture is not None:
-                    warnings.warn(
-                        'texture specified in URDF is not supported'
-                    )
-                elif visual.material.color is not None:
-                    mesh.visual.face_colors = visual.material.color
-
             mesh.apply_transform(visual.origin)
             mesh.metadata["origin"] = visual.origin
             meshes.append(mesh)
@@ -1722,6 +1726,9 @@ class RobotModel(CascadedLink):
         for urdf_link in self.urdf_robot_model.links:
             link = Link(name=urdf_link.name)
             link.collision_mesh = urdf_link.collision_mesh
+            link.collision_meshes = urdf_link.collision_meshes  # TLP
+            if link.collision_meshes:
+                assert link.collision_mesh
             link.visual_mesh = self._meshes_from_urdf_visuals(
                 urdf_link.visuals)
             links.append(link)
@@ -1823,6 +1830,11 @@ class RobotModel(CascadedLink):
 
         self._relevance_predicate_table = \
             self._compute_relevance_predicate_table()
+
+        for link in self.link_list:
+            link.worldcoords()  # superstition
+            # if 'hitman_drawer' in link.name:
+            #     print('load', link.name, link.worldcoords())
 
     def move_end_pos(self, pos, wrt='local', *args, **kwargs):
         pos = np.array(pos, dtype=np.float64)

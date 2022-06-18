@@ -48,6 +48,10 @@ class PR2(RobotModelFromURDF):
         self.head_root_link = self.head_pan_link
 
         self.chains = set(['base', 'right', 'left', 'head'])
+        self.chain_type = {'base': 'omni_base_chain',
+                           'right': 'revolute_chain',
+                           'left': 'revolute_chain',
+                           'head': 'revolute_chain'}
         self.base_links = \
             [self.base_link, self.base_bellow_link, self.torso_lift_link]
         self.link_lists = \

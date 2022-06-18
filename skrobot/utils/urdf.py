@@ -2302,6 +2302,7 @@ class Link(URDFType):
 
         self._visual_meshes = None
         self._collision_mesh = None
+        self._collision_meshes = None
 
     @property
     def name(self):
@@ -2364,16 +2365,16 @@ class Link(URDFType):
         self._collisions = value
 
     @property
-    def collision_mesh(self):
-        """Return collision mesh
+    def collision_meshes(self):
+        """Return collision meshes
 
-        :class:`~trimesh.base.Trimesh` : A single collision mesh for
-        the link, specified in the link frame, or None if there isn't one.
+        :class:`~trimesh.base.Trimesh` : A list of collision meshes for
+        the link, specified in the link frame.
 
         """
         if len(self.collisions) == 0:
-            return None
-        if self._collision_mesh is None:
+            return []
+        if self._collision_meshes is None:
             meshes = []
             for c in self.collisions:
                 for m in c.geometry.meshes:
@@ -2388,10 +2389,27 @@ class Link(URDFType):
                     m.metadata["origin"] = pose
                     meshes.append(m)
             if len(meshes) == 0:
+                return []
+            self._collision_meshes = meshes
+        return self._collision_meshes
+    
+    @property
+    def collision_mesh(self):
+        """Return collision mesh
+
+        :class:`~trimesh.base.Trimesh` : A single collision mesh for
+        the link, specified in the link frame, or None if there isn't one.
+
+        """
+        if len(self.collisions) == 0:
+            return None
+        if self._collision_mesh is None:
+            meshes = self.collision_meshes
+            if len(meshes) == 0:
                 return None
             self._collision_mesh = (meshes[0] + meshes[1:])
         return self._collision_mesh
-
+    
 
 class URDF(URDFType):
     """The top-level URDF specification.
