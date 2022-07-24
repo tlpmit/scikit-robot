@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-import skrobot_tlp as skrobot
+import skrobot as skrobot
 
 import pdb
 
