@@ -1,5 +1,5 @@
 import numpy as np
-from quadprog import solve_qp as _solve_qp
+# from quadprog import solve_qp as _solve_qp
 
 
 def solve_qp(P, q, G, h, A=None, b=None, sym_proj=False):

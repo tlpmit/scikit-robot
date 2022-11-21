@@ -8,7 +8,6 @@ from skrobot.model import RobotModel
 
 from .urdf import RobotModelFromURDF
 
-
 class PR2(RobotModelFromURDF):
 
     """PR2 Robot Model.
@@ -17,6 +16,8 @@ class PR2(RobotModelFromURDF):
 
     def __init__(self, *args, **kwargs):
         super(PR2, self).__init__(*args, **kwargs)
+
+        self.torsoZ = 0.3
 
         self.rarm_end_coords = CascadedCoords(
             parent=self.r_gripper_tool_frame,
@@ -77,6 +78,16 @@ class PR2(RobotModelFromURDF):
                        self.r_gripper_l_finger_link,
                        self.r_gripper_r_finger_tip_link,
                        self.r_gripper_l_finger_tip_link]}
+        self.finger_links = \
+            set([self.l_gripper_r_finger_link,
+                       self.l_gripper_l_finger_link,
+                       self.l_gripper_r_finger_tip_link,
+                       self.l_gripper_l_finger_tip_link,
+                 self.r_gripper_r_finger_link,
+                       self.r_gripper_l_finger_link,
+                       self.r_gripper_r_finger_tip_link,
+                       self.r_gripper_l_finger_tip_link                 
+                ])
         self.collision_link_lists = \
             {'left': self.link_lists['left'] + \
              [self.l_forearm_link, self.l_upper_arm_link] + self.hand_links['left'],
@@ -89,6 +100,7 @@ class PR2(RobotModelFromURDF):
              for h in ('left', 'right')}
         self.hand_body_names['left'] |= set([self.l_wrist_flex_link, self.l_wrist_roll_link])
         self.hand_body_names['right'] |= set([self.r_wrist_flex_link, self.r_wrist_roll_link])
+        self.finger_body_names = set([l.name for l in self.finger_links])
         self.base_body_names = set([l.name for l in self.base_links])
         self.arm_body_names = \
             {h : set([l.name for l in set(self.collision_link_lists[h]) - set(self.hand_links[h])]) \
@@ -211,7 +223,7 @@ class PR2(RobotModelFromURDF):
         return r
 
     def reset_manip_pose(self):
-        self.torso_lift_joint.joint_angle(0.3)
+        self.torso_lift_joint.joint_angle(self.torsoZ)
         self.l_shoulder_pan_joint.joint_angle(np.deg2rad(75))
         self.l_shoulder_lift_joint.joint_angle(np.deg2rad(50))
         self.l_upper_arm_roll_joint.joint_angle(np.deg2rad(110))
@@ -231,7 +243,7 @@ class PR2(RobotModelFromURDF):
         return self.angle_vector()
 
     def reset_pose(self):
-        self.torso_lift_joint.joint_angle(0.3)
+        self.torso_lift_joint.joint_angle(self.torsoZ)
         self.l_shoulder_pan_joint.joint_angle(np.deg2rad(60))
         self.l_shoulder_lift_joint.joint_angle(np.deg2rad(74))
         self.l_upper_arm_roll_joint.joint_angle(np.deg2rad(70))

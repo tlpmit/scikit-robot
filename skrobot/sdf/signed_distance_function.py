@@ -5,7 +5,7 @@ from math import floor
 import os
 
 import numpy as np
-import pysdfgen
+# import pysdfgen
 from scipy.interpolate import RegularGridInterpolator
 
 from skrobot.coordinates import CascadedCoords

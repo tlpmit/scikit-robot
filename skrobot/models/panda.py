@@ -22,8 +22,7 @@ class Panda(RobotModelFromURDF):
         self.rarm_end_coords = CascadedCoords(
             parent=self.panda_hand,
             name='rarm_end_coords')
-        self.rarm_end_coords.translate(
-            np.array([0.0, 0.0, 0.1], dtype=np.float32))
+        self.rarm_end_coords.translate(np.array([0.0, 0.0, 0.1]))
         self.rarm_end_coords.rotate(- np.pi , axis='x')
         # Wrist
         self.rarm_wrist_coords = CascadedCoords(
@@ -47,12 +46,16 @@ class Panda(RobotModelFromURDF):
             {'right': [self.panda_hand,
                        self.panda_rightfinger,
                        self.panda_leftfinger]}
+        self.finger_links = \
+            set([self.panda_rightfinger,
+                 self.panda_leftfinger])
         self.collision_link_lists = \
             {'right': self.link_lists['right'] + self.hand_links['right'],
              'base': self.link_lists['base']}
         self.hand_body_names = \
             {h : set([l.name for l in self.hand_links[h]]) \
              for h in ('right',)}
+        self.finger_body_names = set([l.name for l in self.finger_links])        
         self.base_body_names = set([l.name for l in self.base_links])
         self.arm_body_names = \
             {h : set([l.name for l in set(self.collision_link_lists[h]) - set(self.hand_links[h])]) \
