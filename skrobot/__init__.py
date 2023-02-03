@@ -3,8 +3,8 @@
 from skrobot import coordinates
 from skrobot import data
 from skrobot import interpolator
-from skrobot import optimizer
-from skrobot import optimizers
+# from skrobot import optimizer
+# from skrobot import optimizers
 from skrobot import planner
 from skrobot import interfaces
 from skrobot import model

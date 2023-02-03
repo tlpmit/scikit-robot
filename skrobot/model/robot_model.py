@@ -31,7 +31,7 @@ from skrobot.model.joint import joint_angle_limit_weight
 from skrobot.model.joint import LinearJoint
 from skrobot.model.joint import RotationalJoint
 from skrobot.model.link import Link
-from skrobot.optimizer import solve_qp
+#from skrobot.optimizer import solve_qp
 from skrobot.utils.listify import listify
 from skrobot.utils import urdf
 from skrobot.utils.urdf import URDF
