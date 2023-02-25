@@ -31,7 +31,7 @@ class PR2(RobotModelFromURDF):
             name='head_end_coords').rotate(np.pi / 2.0, 'y')
         self.torso_end_coords = CascadedCoords(
             parent=self.torso_lift_link,
-            name='head_end_coords')
+            name='torso_end_coords')
 
         # Wrist
         self.rarm_wrist_coords = CascadedCoords(

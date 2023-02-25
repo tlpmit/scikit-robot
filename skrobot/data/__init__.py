@@ -58,3 +58,6 @@ def pr2_urdfpath():
         quiet=True,
     )
     return osp.join(get_cache_dir(), 'pr2_description', 'pr2.urdf')
+
+def movo_urdfpath():
+    return osp.join(get_cache_dir(), 'movo_description', 'movo.urdf')

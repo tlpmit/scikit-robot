@@ -23,7 +23,7 @@ def main():
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(2*640, 2*480))
 
     robots = [
-        skrobot.models.Panda()
+        skrobot.models.Movo()
     ]
     nrow, ncol = _get_tile_shape(len(robots))
     row, col = 2, 2
