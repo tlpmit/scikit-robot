@@ -23,7 +23,7 @@ def main():
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(2*640, 2*480))
 
     robots = [
-        skrobot.models.Movo()
+        skrobot.models.Spot()
     ]
     nrow, ncol = _get_tile_shape(len(robots))
     row, col = 2, 2
@@ -41,9 +41,13 @@ def main():
             viewer.add(robot)
 
     viewer.set_camera(angles=[np.deg2rad(30), 0, 0])
+    dist = 0.08
+    print('Setting gripper to', dist)
+    robot.gripper_distance(dist)
+    print(robot.arm0_link_sh0.worldcoords().T())    
+    print(robot.rarm_end_coords.worldcoords().T())
+
     viewer.show()
-    print('Setting gripper')
-    robot.gripper_distance(0.08)
     viewer.redraw()
 
     print('==> Press [q] to close window')

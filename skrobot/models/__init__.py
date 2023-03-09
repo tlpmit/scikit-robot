@@ -5,3 +5,4 @@ from skrobot.models.kuka import Kuka
 from skrobot.models.panda import Panda
 from skrobot.models.pr2 import PR2
 from skrobot.models.movo import Movo
+from skrobot.models.spot import Spot

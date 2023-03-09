@@ -88,8 +88,6 @@ class Fetch(RobotModelFromURDF):
                 link.collision_mesh.convex_mesh_vertices = \
                     np.ascontiguousarray(link.collision_mesh.convex_mesh.vertices, dtype=np.double)
                 # print('Computing convex_mesh_vertices for', link)
-        self.gripper_distance_forward_cache = {}
-        self.gripper_distance_inverse_cache = {}
         # Self collision links
         self.self_collision_link_name_pairs = set()
         for link1 in self.collision_link_lists['right']:

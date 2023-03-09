@@ -61,3 +61,6 @@ def pr2_urdfpath():
 
 def movo_urdfpath():
     return osp.join(get_cache_dir(), 'movo_description', 'movo.urdf')
+
+def spot_urdfpath():
+    return osp.join(get_cache_dir(), 'spot_description', 'spot.urdf')
