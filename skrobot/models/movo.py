@@ -54,7 +54,7 @@ class Movo(RobotModelFromURDF):
                            'left': 'revolute_chain',
                            'head': 'revolute_chain'}
         self.base_links = \
-            [self.base_chassis_link, self.linear_actuator_link]
+            [self.base_link_0, self.base_chassis_link, self.linear_actuator_link]
         self.link_lists = \
             {'left': self.larm.link_list,
              'right': self.rarm.link_list,

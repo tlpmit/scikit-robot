@@ -44,7 +44,7 @@ def main():
     dist = 0.08
     print('Setting gripper to', dist)
     robot.gripper_distance(dist)
-    print(robot.arm0_link_sh0.worldcoords().T())    
+    print(robot.arm_link_sh0.worldcoords().T())    
     print(robot.rarm_end_coords.worldcoords().T())
 
     viewer.show()

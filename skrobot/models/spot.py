@@ -16,23 +16,23 @@ class Spot(RobotModelFromURDF):
         super(Spot, self).__init__(*args, **kwargs)
 
         self.rarm_end_coords = CascadedCoords(
-            parent=self.arm0_end_effector_link,
+            parent=self.arm_end_effector_link,
             name='rarm_end_coords')
         # self.rarm_end_coords.translate([0.03, 0.0, 0.0], 'world')
         # self.rarm_end_coords.rotate(-np.pi/2 , axis='y')        
         
         # Wrist
         self.rarm_wrist_coords = CascadedCoords(
-            parent=self.arm0_link_wr1,
+            parent=self.arm_link_wr1,
             name='rarm_wrist_coords')
         # limbs
-        self.rarm_root_link = self.arm0_link_sh0
+        self.rarm_root_link = self.arm_link_sh0
 
         self.chains = set(['base', 'right'])
         self.chain_type = {'base': 'omni_base_chain',
                            'right': 'revolute_chain'}
         self.base_links = \
-            [self.world_link, self.base,
+            [self.world_link, self.body,
              self.fl_hip, self.fl_uleg, self.fl_lleg, self.fr_hip, self.fr_uleg, self.fr_lleg,
              self.hl_hip, self.hl_uleg, self.hl_lleg, self.hr_hip, self.hr_uleg, self.hr_lleg,
              ]
@@ -45,9 +45,9 @@ class Spot(RobotModelFromURDF):
         self.end_coords = \
             {'right': self.rarm_end_coords}
         self.hand_links = \
-            {'right': [self.arm0_link_wr1, self.arm0_link_fngr]}
+            {'right': [self.arm_link_wr1, self.arm_link_fngr]}
         self.finger_links = \
-            set([self.arm0_link_fngr,                 
+            set([self.arm_link_fngr,                 
                 ])
         self.collision_link_lists = \
             {'right': list(set(self.link_lists['right'] + self.hand_links['right'])),
@@ -76,7 +76,7 @@ class Spot(RobotModelFromURDF):
         self.self_collision_link_name_pairs = set()
         for link1 in self.collision_link_lists['right']:
             for link2 in self.collision_link_lists['base']:
-                if link1 in (self.arm0_link_sh0, self.arm0_link_sh1,) \
+                if link1 in (self.arm_link_sh0, self.arm_link_sh1,) \
                    and link2 in self.base_links:
                     continue
                 self.self_collision_link_name_pairs.add(tuple(sorted((link1.name, link2.name))))
@@ -95,24 +95,24 @@ class Spot(RobotModelFromURDF):
         for j in [self.fl_kn, self.fr_kn, self.hl_kn, self.hr_kn,
                   ]:
             j.joint_angle(-0.3)            
-        self.arm0_sh0.joint_angle(0)
-        self.arm0_sh1.joint_angle(0)
-        self.arm0_hr0.joint_angle(0)
-        self.arm0_el0.joint_angle(0)
-        self.arm0_el1.joint_angle(0)
-        self.arm0_wr0.joint_angle(0)
-        self.arm0_wr1.joint_angle(0)
+        self.arm_sh0.joint_angle(0)
+        self.arm_sh1.joint_angle(-np.pi + 0.1)
+        # self.arm_hr0.joint_angle(0)
+        self.arm_el0.joint_angle(0)
+        self.arm_el1.joint_angle(0)
+        self.arm_wr0.joint_angle(-np.pi/4)
+        self.arm_wr1.joint_angle(0)
         return self.angle_vector()
 
     @cached_property
     def rarm(self):
-        rarm_links = [self.arm0_link_sh0,
-                      self.arm0_link_sh1,
-                      self.arm0_link_hr0,
-                      self.arm0_link_el0,
-                      self.arm0_link_el1,
-                      self.arm0_link_wr0,
-                      self.arm0_link_wr1]
+        rarm_links = [self.arm_link_sh0,
+                      self.arm_link_sh1,
+                      # self.arm_link_hr0,
+                      self.arm_link_el0,
+                      self.arm_link_el1,
+                      self.arm_link_wr0,
+                      self.arm_link_wr1]
         rarm_joints = []
         for link in rarm_links:
             rarm_joints.append(link.joint)
@@ -142,6 +142,6 @@ class Spot(RobotModelFromURDF):
         finger_length = 0.1
         if dist is not None:
             angle = -np.arctan2(dist, finger_length)
-            self.arm0_f1x.joint_angle(angle)
-        return np.cos(-self.arm0_f1x.joint_angle())*finger_length
+            self.arm_f1x.joint_angle(angle)
+        return np.cos(-self.arm_f1x.joint_angle())*finger_length
     
