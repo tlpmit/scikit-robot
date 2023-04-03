@@ -22,7 +22,7 @@ class Panda(RobotModelFromURDF):
         self.rarm_end_coords = CascadedCoords(
             parent=self.panda_hand,
             name='rarm_end_coords')
-        self.rarm_end_coords.translate(np.array([0.0, 0.0, 0.1]))
+        self.rarm_end_coords.translate(np.array([0.0, 0.0, 0.11]))
         self.rarm_end_coords.rotate(- np.pi , axis='x')
         # Wrist
         self.rarm_wrist_coords = CascadedCoords(
