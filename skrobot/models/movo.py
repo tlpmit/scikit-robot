@@ -26,9 +26,8 @@ class Movo(RobotModelFromURDF):
             parent=self.left_ee_link,
             name='larm_end_coords')
         self.head_end_coords = CascadedCoords(
-            pos=[0.08, 0.0, 0.13],        # TODO: Check
-            parent=self.tilt_link,
-            name='head_end_coords').rotate(np.pi / 2.0, 'y')
+            parent=self.kinect2_rgb_optical_frame,
+            name='head_end_coords')
         self.torso_end_coords = CascadedCoords(
             parent=self.linear_actuator_link,
             name='torso_end_coords')
@@ -216,10 +215,10 @@ class Movo(RobotModelFromURDF):
         self.right_wrist_spherical_2_joint.joint_angle(np.deg2rad(0))            
         self.right_wrist_3_joint.joint_angle(np.deg2rad(0))
 
-        self.left_shoulder_pan_joint.joint_angle(np.deg2rad(90))
+        self.left_shoulder_pan_joint.joint_angle(np.deg2rad(0))
         self.left_shoulder_lift_joint.joint_angle(np.deg2rad(90))
         self.left_arm_half_joint.joint_angle(np.deg2rad(0))            
-        self.left_elbow_joint.joint_angle(np.deg2rad(0))
+        self.left_elbow_joint.joint_angle(np.deg2rad(-90))
         self.left_wrist_spherical_1_joint.joint_angle(np.deg2rad(0))
         self.left_wrist_spherical_2_joint.joint_angle(np.deg2rad(0))            
         self.left_wrist_3_joint.joint_angle(np.deg2rad(0))
@@ -228,7 +227,7 @@ class Movo(RobotModelFromURDF):
         self.right_gripper_finger1_joint.joint_angle(np.deg2rad(0))        
 
         self.pan_joint.joint_angle(np.deg2rad(0))
-        self.tilt_joint.joint_angle(np.deg2rad(-50))
+        self.tilt_joint.joint_angle(np.deg2rad(-45))
                     
         return self.angle_vector()
 
